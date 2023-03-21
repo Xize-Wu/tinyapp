@@ -1,9 +1,9 @@
 const express = require("express");
+const {generateRandomString} = require("./generateRandomString")
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");//declares the ejs as the templating engine
-
 
 
 const urlDatabase = {
@@ -11,6 +11,7 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
@@ -27,12 +28,20 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  //generate a separate var for the random string
+  const key = generateRandomString()
+  urlDatabase[key] = req.body.longURL
+  res.redirect(`/urls/${key}`)
+  console.log(urlDatabase)
+});
+
+app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
 
-function generateRandomString() {}
+
 
 
 
