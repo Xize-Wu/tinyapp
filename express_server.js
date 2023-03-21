@@ -27,13 +27,20 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
+app.post("/urls/:id/delete", (req, res) => {
+delete urlDatabase[req.params.id]
+res.redirect('/urls')
+});
+
 app.post("/urls", (req, res) => {
   //generate a separate var for the random string
   const key = generateRandomString()
-  urlDatabase[key] = req.body.longURL
+  urlDatabase[key] = req.body.longURL 
   res.redirect(`/urls/${key}`)
   console.log(urlDatabase)
 });
+
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // Log the POST request body to the console
