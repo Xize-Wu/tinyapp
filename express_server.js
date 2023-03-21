@@ -1,5 +1,5 @@
 const express = require("express");
-const {generateRandomString} = require("./generateRandomString")
+const { generateRandomString } = require("./generateRandomString");
 const app = express();
 const PORT = 8080;
 
@@ -23,22 +23,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
 
 
 app.post("/urls/:id/delete", (req, res) => {
-delete urlDatabase[req.params.id]
-res.redirect('/urls')
+  delete urlDatabase[req.params.id];
+  res.redirect('/urls');
 });
 
 app.post("/urls", (req, res) => {
   //generate a separate var for the random string
-  const key = generateRandomString()
-  urlDatabase[key] = req.body.longURL 
-  res.redirect(`/urls/${key}`)
-  console.log(urlDatabase)
+  const key = generateRandomString();
+  urlDatabase[key] = req.body.longURL;
+  res.redirect(`/urls/${key}`);
+  console.log(urlDatabase);
 });
 
 
@@ -47,6 +47,10 @@ app.post("/urls", (req, res) => {
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect('/urls');
+});
 
 
 
