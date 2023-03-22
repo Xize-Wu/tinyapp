@@ -13,15 +13,18 @@ const urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
+//show the app database on the index page
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+//redirect to add - new page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
@@ -52,7 +55,10 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
-
+//Redirect to the registration page
+app.get("/register", (req, res) =>{
+  res.render("urls_registration")
+})
 
 
 
