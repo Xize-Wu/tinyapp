@@ -1,9 +1,11 @@
 const express = require("express");
+const cookieParser = require('cookie-parser')
 const { generateRandomString } = require("./generateRandomString");
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");//declares the ejs as the templating engine
+app.use(cookieParser())
 
 
 const urlDatabase = {
@@ -52,7 +54,11 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
-
+app.post("/login", (req, res) =>{
+  const userName = req.body.username
+  res.cookie('username', userName)
+  res.redirect('/urls');
+})
 
 
 
