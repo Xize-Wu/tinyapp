@@ -25,6 +25,11 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk",
   },
+  user3RandomID: {
+    id: "user3RandomID",
+    email: "wuxize1995@gmail.com",
+    password: "12345",
+  },
 };
 //Look up specific user objects
 
@@ -82,15 +87,10 @@ app.post("/urls/:id", (req, res) => {
   res.redirect('/urls');
 });
 
-// app.post("/login", (req, res) => {
-//   const username = req.body.username;
-//   res.cookie('username', username);
-//   res.redirect('/urls');
-// });
 
 //delete cookie and log out
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -120,20 +120,32 @@ app.post("/register", (req, res) => {
   };
 
   res.cookie('user_id', key);
-  // console.log(users[key])
-  // console.log(users[key]['email'])
-
-  //console.log(users);
   res.redirect('/urls');
-  // console.log(req.cookies["user_id"])
-  // console.log(req.cookies)
 });
 
 //redirect to login page
-app.get('/login',(req,res) =>{
-  res.render("login")
-})
+app.get('/login', (req, res) => {
+  res.render("login");
+});
 
+app.post("/login", (req, res) => {
+  const loginEmail = req.body.email;
+  const loginPassword = req.body.password;
+
+  for (let key in users){
+    if (users[key]["email"] === loginEmail){
+      if(users[key]["password"] === loginPassword){
+        //console.log(users[key]['id'])
+        res.cookie('user_id', users[key]['id'])
+        return res.redirect('/urls');
+        //res.redirect('/login')
+        //console.log(req.cookies.user_id)
+      }
+      return res.status(403).send('Error. Wrong password.')
+    } 
+  }
+  return res.status(403).send('Error. User does not exit in the database.')
+});
 
 
 
