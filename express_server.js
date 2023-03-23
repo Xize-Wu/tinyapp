@@ -46,19 +46,24 @@ app.get("/urls", (req, res) => {
   return res.render("urls_index", templateVars);
 });
 
+//go to add new url page
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies.user_id;
   const templateVars = { username: user_id };
   if (user_id) {
     const email = users[user_id].email;
     templateVars["email"] = email;
+    return res.render("urls_new", templateVars);
   };
-
-  res.render("urls_new", templateVars);
+  return res.redirect("/login")
 });
 
 
 app.get("/urls/:id", (req, res) => {
+  if(!Object.keys(urlDatabase).includes(req.params.id)){
+    return res.status(401).send("Error: 401. Short url does not exist in the database.");
+
+  }
   const user_id = req.cookies.user_id;
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: user_id };
   if (user_id) {
@@ -74,12 +79,18 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect('/urls');
 });
 
+//post an url to database
 app.post("/urls", (req, res) => {
   //generate a separate var for the random string
   const key = generateRandomString();
-  urlDatabase[key] = req.body.longURL;
-  res.redirect(`/urls/${key}`);
-  //console.log(urlDatabase);
+  const user_id = req.cookies.user_id;
+
+  if (user_id){
+    urlDatabase[key] = req.body.longURL;
+    res.redirect(`/urls/${key}`);
+  }
+
+  return res.status(401).send("Error: 401. Must log in before posting.");
 });
 
 app.post("/urls/:id", (req, res) => {
