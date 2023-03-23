@@ -17,9 +17,11 @@
             <button type="submit">Logout</button>
           </form>
           <% } else {%>
-            <form method="POST" action="/login" name="username">
-              <input type="text" name="username" placeholder="Username" required>
+            <form  method="GET" action="/login" name="username">
               <button type="submit">Login</button>
+            </form>
+            <form method="GET" action="/register" name="username">
+              <button type="submit">Register</button>
             </form>
               <% }%>
       </div>

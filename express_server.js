@@ -112,9 +112,6 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Error: 400. An account has been created with this email.");
   }
 
-
-
-
   const key = generateRandomString();
   users[key] = {
     'id': key,
@@ -126,12 +123,19 @@ app.post("/register", (req, res) => {
   // console.log(users[key])
   // console.log(users[key]['email'])
 
-  console.log(users);
-
+  //console.log(users);
   res.redirect('/urls');
   // console.log(req.cookies["user_id"])
   // console.log(req.cookies)
 });
+
+//redirect to login page
+app.get('/login',(req,res) =>{
+  res.render("login")
+})
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
