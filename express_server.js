@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const { generateRandomString } = require("./generateRandomString");
+const { getUserByEmail } = require("./getUserByEmail");
 const app = express();
 const PORT = 8080;
 
@@ -42,7 +43,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies.user_id;
-  const templateVars = {username: user_id };
+  const templateVars = { username: user_id };
   if (user_id) {
     const email = users[user_id].email;
     templateVars["email"] = email;
@@ -54,7 +55,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user_id = req.cookies.user_id;
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: user_id  };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: user_id };
   if (user_id) {
     const email = users[user_id].email;
     templateVars["email"] = email;
@@ -103,6 +104,17 @@ app.get("/register", (req, res) => {
 
 //Registeration handler!
 app.post("/register", (req, res) => {
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send("Error: 400. Email and password could not be empty");
+  }
+
+  if (getUserByEmail(req.body.email, users)) {
+    return res.status(400).send("Error: 400. An account has been created with this email.");
+  }
+
+
+
+
   const key = generateRandomString();
   users[key] = {
     'id': key,
