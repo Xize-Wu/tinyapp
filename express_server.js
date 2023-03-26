@@ -13,7 +13,7 @@ app.use(cookieParser());
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: "coding"
+    userID: "userRandomID"
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
@@ -41,9 +41,6 @@ const urlsForUser = function(database, uid){
 
   let result = {}
   for (const key in database){
-    console.log(result[key])
-      console.log(database[key])
-      console.log("-----------")
     if (uid === database[key]["userID"]){
       result[key] = database[key]
       
@@ -55,15 +52,11 @@ const urlsForUser = function(database, uid){
 //index page
 app.get("/urls", (req, res) => {
   const user_id = req.cookies.user_id;
-  
-  
-  //const templateVars = { urls: urlDatabase, username: user_id };
   if (!user_id) {
     res.send("Access denied. Please <a href ='/login'> log in </a> or <a href ='/register'> register </a>.");
   } else {
     const newUrls = urlsForUser(urlDatabase, user_id)
     const templateVars = {urls: newUrls, username: user_id}
-    //console.log(users[user_id]["email"])
     templateVars["email"] = users[user_id]["email"];
     res.render("urls_index", templateVars);
   }
@@ -72,12 +65,15 @@ app.get("/urls", (req, res) => {
 //go to add new url page
 app.get('/urls/new', (req, res) => {
   const user_id = req.cookies.user_id;
+  
   const templateVars = { username: user_id };
   if (user_id) {
     const email = users[user_id].email;
     templateVars['email'] = email;
-  }
-  return res.redirect("/login");
+    res.render("urls_new",templateVars)
+  
+  } else {
+  return res.redirect("/login");}
 });
 
 
@@ -190,7 +186,6 @@ app.post("/register", (req, res) => {
     };
 
     res.cookie('user_id', key);
-    //console.log(req.cookies.user_id);
     res.redirect('/urls');
   }
 });
@@ -208,8 +203,6 @@ app.post("/login", (req, res) => {
   const loginPassword = req.body.password;
 
   for (let key in users) {
-    console.log(users[key])
-    console.log(loginEmail)
     if (users[key]["email"] === loginEmail) {
       if (bcrypt.compareSync(loginPassword, users[key]["password"])) {
         res.cookie('user_id', users[key]['id']);
