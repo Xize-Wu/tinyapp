@@ -37,13 +37,33 @@ const users = {
 //Look up specific user objects
 app.use(express.urlencoded({ extended: true }));
 
+const urlsForUser = function(database, uid){
+
+  let result = {}
+  for (const key in database){
+    console.log(result[key])
+      console.log(database[key])
+      console.log("-----------")
+    if (uid === database[key]["userID"]){
+      result[key] = database[key]
+      
+    }
+  }
+  return  result
+}
+
 //index page
 app.get("/urls", (req, res) => {
   const user_id = req.cookies.user_id;
-  const templateVars = { urls: urlDatabase, username: user_id };
+  
+  
+  //const templateVars = { urls: urlDatabase, username: user_id };
   if (!user_id) {
     res.send("Access denied. Please <a href ='/login'> log in </a> or <a href ='/register'> register </a>.");
   } else {
+    const newUrls = urlsForUser(urlDatabase, user_id)
+    const templateVars = {urls: newUrls, username: user_id}
+    //console.log(users[user_id]["email"])
     templateVars["email"] = users[user_id]["email"];
     res.render("urls_index", templateVars);
   }
@@ -56,8 +76,7 @@ app.get('/urls/new', (req, res) => {
   if (user_id) {
     const email = users[user_id].email;
     templateVars['email'] = email;
-    return res.render("urls_new", templateVars);
-  };
+  }
   return res.redirect("/login");
 });
 
@@ -65,7 +84,6 @@ app.get('/urls/new', (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user_id = req.cookies.user_id;
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]["longURL"], username: user_id };
-  console.log();
   //return a relevant error message if the user is not logged in
   if (!user_id) {
     return res.send("Access denied. Please <a href ='/login'> log in </a>.");
@@ -170,35 +188,38 @@ app.post("/register", (req, res) => {
       'email': req.body.email,
       'password': hashedPassword
     };
-    console.log(hashedPassword);
 
     res.cookie('user_id', key);
-    console.log(req.cookies.user_id);
+    //console.log(req.cookies.user_id);
     res.redirect('/urls');
   }
 });
+
+
 
 //redirect to login page
 app.get('/login', (req, res) => {
   res.render("login");
 });
 
+//login
 app.post("/login", (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
 
   for (let key in users) {
+    console.log(users[key])
+    console.log(loginEmail)
     if (users[key]["email"] === loginEmail) {
-      if (users[key]["password"] === loginPassword) {
+      if (bcrypt.compareSync(loginPassword, users[key]["password"])) {
         res.cookie('user_id', users[key]['id']);
         return res.redirect('/urls');
       }
-      return res.send("User does not exist in the database, or the password is wrong. Please <a href ='/login'> try again </a>");
+      return res.send("wrong password User does not exist in the database, or the password is wrong. Please <a href ='/login'> try again </a>");
     }
   }
-  return res.status(403).send("User does not exist in the database, or the password is wrong. Please <a href ='/login'> try again </a>");
+  return res.send("User does not exist in the database, or the password is wrong. Please <a href ='/login'> try again </a>");
 });
-
 
 
 app.listen(PORT, () => {
