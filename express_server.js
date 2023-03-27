@@ -59,7 +59,10 @@ app.get("/urls", (req, res) => {
   if (!user_id) {
     res.send("Access denied. Please <a href ='/login'> log in </a> or <a href ='/register'> register </a>.");
   } else {
-    const templateVars = { user: users[req.session["user_id"]], urls: urlsForUser(req.session["user_id"], urlDatabase) };
+    const templateVars = {user: users[user_id], urls: urlsForUser(urlDatabase, req.session["user_id"]) };
+    console.log(templateVars.urls)
+    //console.log("User: ", templateVars.user)
+    //console.log(user_id)
     // const newUrls = urlsForUser(urlDatabase, user_id);
     // const templateVars = { urls: newUrls, username: user_id };
     // templateVars["email"] = users[user_id]["email"];
@@ -70,9 +73,9 @@ app.get("/urls", (req, res) => {
 //go to add new url page
 app.get('/urls/new', (req, res) => {
   const user_id = req.session["user_id"];
-  const templateVars = { username: user_id };
   if (user_id) {
-    templateVars['email'] = users[user_id].email;
+    const templateVars = { user: users[user_id] };
+    //templateVars['email'] = users[user_id];
     res.render("urls_new", templateVars);
   } else {
     return res.redirect("/login");
@@ -81,7 +84,7 @@ app.get('/urls/new', (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const user_id = req.session["user_id"];
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]["longURL"], username: user_id };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]["longURL"], user: users[user_id] };
   if (!user_id) {
     return res.send("Access denied. Please <a href ='/login'> log in </a>.");
   } else if (!Object.keys(urlDatabase).includes(req.params.id)) {
@@ -89,11 +92,26 @@ app.get("/urls/:id", (req, res) => {
   } else if (user_id !== urlDatabase[req.params.id]["userID"]) {
     return res.send("Access denied. You do not have access to this page.");
   } else {
-    const email = users[user_id].email;
-    templateVars["email"] = email;
+    // const email = users[user_id].email;
+    // templateVars["email"] = email;
     res.render("urls_show", templateVars);
   }
 });
+
+
+
+app.get("/u/:id", (req,res) =>{
+  const urlObj = urlDatabase[req.params.id]
+  console.log(urlObj)
+  // console.log("id", req.params.id)
+  // console.log("long", longURL)
+  if(!urlObj){
+    return res.status(404).send("Short url is not in the database.")
+  } else {
+    //console.log(urlDatabase)
+    return res.redirect(urlObj.longURL)
+  }
+})
 
 //Delete an entry from the database
 app.post("/urls/:id/delete", (req, res) => {
@@ -136,7 +154,7 @@ app.post("/urls/:id", (req, res) => {
 //delete cookie and log out
 app.post("/logout", (req, res) => {
   req.session = null;
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 //Redirect to the registration page
@@ -145,8 +163,8 @@ app.get("/register", (req, res) => {
   if (user_id) {
     return res.redirect('/urls');
   } else {
-    const email = users["user_id"];
-    const templateVars = { username: user_id, email };
+    const user = users[user_id];
+    const templateVars = { user };
     res.render("register", templateVars);
   }
 });
@@ -165,8 +183,8 @@ app.post("/register", (req, res) => {
       'email': req.body.email,
       'password': hashedPassword
     };
-    req.session['user_id'] = users[key];
-    console.log(req.session['user_id'])
+    req.session['user_id'] = key;
+    //console.log(req.session['user_id'])
     //res.cookie('user_id', key);
     res.redirect('/urls');
   }
@@ -174,18 +192,25 @@ app.post("/register", (req, res) => {
 
 //redirect to login page
 app.get('/login', (req, res) => {
-  res.render("login");
+  const user_id = req.session["user_id"];
+  if (user_id) {
+    return res.redirect('/urls');
+  } else {
+    const user = users[user_id];
+    const templateVars = { user };
+    res.render("login", templateVars);
+  }
 });
 
 //login
 app.post("/login", (req, res) => {
   const loginEmail = req.body.email;
   const loginPassword = req.body.password;
-
+console.log(`Email: ${loginEmail}; password: ${loginPassword}`)
   for (let key in users) {
     if (users[key]["email"] === loginEmail) {
       if (bcrypt.compareSync(loginPassword, users[key]["password"])) {
-        req.session.email = users.email;
+        req.session.user_id = key;
         //res.cookie('user_id', users[key]['id']);
         return res.redirect('/urls');
       }
