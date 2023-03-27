@@ -4,7 +4,7 @@ const getUserByEmail = function(emailInput, database) {
       return true;
     }
   }
-  return false;
+  return undefined;
 };
 
 module.exports = {getUserByEmail};
